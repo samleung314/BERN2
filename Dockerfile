@@ -19,7 +19,7 @@ RUN pip install -r requirements.txt
 #     && rm -rf resources_v1.1.b.tar.gz
 
 RUN mkdir -p ./resources \
-    && gsutil -m cp -r gs://bern2-resources/* ./resources
+    && gcloud storage cp -r gs://bern2-resources/* ./resources
 
 WORKDIR /BERN2/resources/GNormPlusJava
 RUN tar -zxvf CRF++-0.58.tar.gz \

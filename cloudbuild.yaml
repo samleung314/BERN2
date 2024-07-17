@@ -5,15 +5,31 @@ steps:
   
 # Docker Build the container image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild', '.']
+  args: ['build', '--network=cloudbuild', '-t', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev', '.']
   
 # Push the container image to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild']
+  args: ['push', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev']
   
 # Deploy container image to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['run', 'deploy', 'bern2-cloudbuild', '--image', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild', '--region', 'us-east1', '--platform', 'managed', '--allow-unauthenticated']
+  args:
+  - 'run'
+  - 'deploy'
+  - 'bern2-cloudbuild-dev'
+  - '--image'
+  - 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev'
+  - '--region'
+  - 'us-east1'
+  - '--platform'
+  - 'managed'
+  - '--cpu'
+  - '8'
+  - '--memory'
+  - '32'
+  - '--port'
+  - '8888'
+  - '--allow-unauthenticated'
 
 options:
  logging: CLOUD_LOGGING_ONLY
