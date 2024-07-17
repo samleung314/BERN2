@@ -13,10 +13,13 @@ SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
 WORKDIR /BERN2
 RUN pip install -r requirements.txt
 
-COPY resources_v1.1.b.tar.gz .
+# COPY resources_v1.1.b.tar.gz .
 
-RUN tar -zxvf resources_v1.1.b.tar.gz \
-    && rm -rf resources_v1.1.b.tar.gz
+# RUN tar -zxvf resources_v1.1.b.tar.gz \
+#     && rm -rf resources_v1.1.b.tar.gz
+
+RUN mkdir -p ./resources \
+    && gsutil -m cp -r gs://bern2-resources/* ./resources
 
 WORKDIR /BERN2/resources/GNormPlusJava
 RUN tar -zxvf CRF++-0.58.tar.gz \

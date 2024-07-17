@@ -10,3 +10,4 @@ dependencies:
   - faiss-gpu
   - libfaiss-avx2
   - conda-forge::gcc
+  - gsutil
