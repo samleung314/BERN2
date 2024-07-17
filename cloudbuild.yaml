@@ -14,6 +14,9 @@ steps:
 # Deploy container image to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['run', 'deploy', 'bern2-cloudbuild', '--image', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild', '--region', 'us-east1', '--platform', 'managed', '--allow-unauthenticated']
+
+options:
+ logging: CLOUD_LOGGING_ONLY
  
 # Push the container image to Artifact Registry repo
 images:
