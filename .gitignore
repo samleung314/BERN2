@@ -111,3 +111,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Docker development
+/dockerignore
+resources_v1.1.b.tar.gz

@@ -3,46 +3,35 @@ FROM continuumio/anaconda3:latest
 RUN apt-get update \
     && apt-get install -y wget default-jre \
     && apt-get install -y build-essential
-    
-WORKDIR /app
-COPY ./environment.yml ./
-RUN conda env create -f environment.yml
-
-# Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
-
-# RUN conda init bash \
-# # && echo "source activate bern2" > ~/.bashrc \
-#     && . ~/.bashrc
-
-# RUN conda create -n bern2 python=3.7 -y \
-#     && conda activate bern2 && \
-#     && conda install pytorch==1.9.0 cudatoolkit=10.2 -c pytorch -y \
-#     && conda install faiss-gpu libfaiss-avx2 -c conda-forge -y \
-#     && conda install conda-forge::gcc -y
 
 RUN git clone https://github.com/samleung314/BERN2.git \
-    && cd ./BERN2 \
-    && pip install -r requirements.txt
+    && conda env create -f ./BERN2/environment.yml
 
-WORKDIR /app/BERN2
+# Make RUN commands use the conda environment:
+SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
+
+WORKDIR /BERN2
+RUN pip install -r requirements.txt
+
 COPY resources_v1.1.b.tar.gz .
 
 RUN tar -zxvf resources_v1.1.b.tar.gz \
-    && rm -rf resources_v1.1.b.tar.gz \
-    && cd resources/GNormPlusJava \
+    && rm -rf resources_v1.1.b.tar.gz
+
+WORKDIR /BERN2/resources/GNormPlusJava
+RUN tar -zxvf CRF++-0.58.tar.gz \
     && mv CRF++-0.58 CRF \
     && cd CRF \
     && ./configure --prefix="$HOME" \
     && make \
-    make install
+    && make install
 
-WORKDIR /app/BERN2/scripts
-RUN chmod +x run_bern2_cpu.sh
+WORKDIR /BERN2/scripts
+RUN chmod +x ./run_bern2_cpu.sh
     
 EXPOSE 8888
     
-ENTRYPOINT ["bash", "-c"]
+ENTRYPOINT ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
 CMD ["./run_bern2_cpu.sh"]
 
 # Expose port 8888 and mount /resources
