@@ -1,3 +1,9 @@
+# stage: download /resources from gcs
+FROM google/cloud-sdk:alpine AS downloader_stage
+WORKDIR /resources
+RUN gcloud storage cp -r gs://bern2-resources/* .
+
+# stage: build service image
 FROM continuumio/anaconda3:latest
 
 RUN apt-get update \
@@ -13,13 +19,7 @@ SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
 WORKDIR /BERN2
 RUN pip install -r requirements.txt
 
-# COPY resources_v1.1.b.tar.gz .
-
-# RUN tar -zxvf resources_v1.1.b.tar.gz \
-#     && rm -rf resources_v1.1.b.tar.gz
-
-RUN mkdir -p ./resources \
-    && gcloud storage cp -r gs://bern2-resources/* ./resources
+COPY --from=downloader_stage /resources /BERN2/resources
 
 WORKDIR /BERN2/resources/GNormPlusJava
 RUN tar -zxvf CRF++-0.58.tar.gz \
@@ -36,9 +36,3 @@ EXPOSE 8888
     
 ENTRYPOINT ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
 CMD ["./run_bern2_cpu.sh"]
-
-# Expose port 8888 and mount /resources
-# docker run -it \
-#     -v /home/jupyter/BERN2/resources/:/app/BERN2/resources \
-#     -p 8888:8888 \
-#     bern2:latest /bin/bash

@@ -36,4 +36,4 @@ options:
  
 # Push the container image to Artifact Registry repo
 images:
-- 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild'
+- 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev'
