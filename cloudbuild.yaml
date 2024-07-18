@@ -1,8 +1,4 @@
 steps:
-# Copy resources
-# - name: 'gcr.io/cloud-builders/gsutil'
-#   args: ['cp', 'gs://bern2/resources_v1.1.b.tar.gz', '.']
-  
 # Docker Build the container image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '--network=cloudbuild', '-t', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev', '.']
