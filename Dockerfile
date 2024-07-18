@@ -17,7 +17,7 @@ RUN pip install -r requirements.txt
 RUN mkdir -p ./resources \
     && gcloud storage cp -r gs://bern2-resources/* ./resources
 
-WORKDIR /BERN2/resources/GNormPlusJava
+WORKDIR /BERN2/resources/GNormPlusJava/CRF
 RUN ./configure --prefix="$HOME" \
     && make \
     && make install
