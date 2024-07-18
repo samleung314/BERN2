@@ -18,7 +18,8 @@ RUN mkdir -p ./resources \
     && gcloud storage cp -r gs://bern2-resources/* ./resources
 
 WORKDIR /BERN2/resources/GNormPlusJava/CRF
-RUN ./configure --prefix="$HOME" \
+RUN chmod +x ./configure \
+    && ./configure --prefix="$HOME" \
     && make \
     && make install
 

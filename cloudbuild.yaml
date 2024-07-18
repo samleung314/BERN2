@@ -3,7 +3,8 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [
             'build', 
-            '--network=cloudbuild', 
+            '--network=cloudbuild',
+            '-t', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:$COMMIT_SHA',
             '-t', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev',
             '--cache-from', 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev',
             '.'
@@ -39,4 +40,5 @@ options:
  
 # Push the container image to Artifact Registry repo
 images:
+- 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:$COMMIT_SHA'
 - 'us-east1-docker.pkg.dev/vertexai-375019/bern2/bern2:cloudbuild-dev'
