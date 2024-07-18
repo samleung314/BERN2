@@ -10,8 +10,9 @@ RUN apt-get update \
 SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
 
 WORKDIR /BERN2
-RUN pip install -r requirements.txt \
-    && mkdir -p ./resources \
+RUN pip install -r requirements.txt
+    
+RUN mkdir -p ./resources \
     && gsutil -m cp -r gs://bern2-resources/* ./resources
 
 WORKDIR /BERN2/resources/GNormPlusJava
