@@ -8,12 +8,14 @@ RUN apt-get update \
 
 # Make RUN commands use the conda environment:
 SHELL ["conda", "run", "-n", "bern2", "/bin/bash", "-c"]
+RUN gcloud components install core gsutil gcloud-crc32c --quiet \
+    && gcloud components update --quiet
 
 WORKDIR /BERN2
 RUN pip install -r requirements.txt
     
 RUN mkdir -p ./resources \
-    && gsutil -m cp -r gs://bern2-resources/* ./resources
+    && gcloud storage cp -r gs://bern2-resources/* ./resources
 
 WORKDIR /BERN2/resources/GNormPlusJava
 RUN ./configure --prefix="$HOME" \
