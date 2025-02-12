@@ -226,31 +226,9 @@ def main():
     )
 
     def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
-
-        # logger.info("predictions array: ", predictions)
-        # preds = np.argmax(predictions, axis=2)
-
-        # preds = np.expand_dims(np.argmax(predictions, axis=2), axis=2)
-        # preds = [np.argmax(pred, axis=1) for pred in predictions]
-        # # preds = np.array(preds, dtype=object)
-        # # preds = np.array([p for p in preds], dtype=object)
-        # object_array = np.empty(len(preds), dtype=object)
-        # object_array[:] = preds
-        # preds = object_array
-
-        # # If predictions is a list of arrays, ensure they are all proper NumPy arrays
-        # predictions = [np.array(pred) for pred in predictions]
-
-        # # Use np.stack to build a uniform 3D array
-        # predictions = np.stack(predictions)  # Now shape should be (923, 128, 3)
-
-        # # Then, apply argmax with keepdims behavior via expand_dims
-        # preds = np.argmax(predictions, axis=2)
-
-        preds = [np.argmax(sub_arr, axis=1) if sub_arr.ndim == 2 else np.argmax(sub_arr) for sub_arr in predictions]
-        preds = np.array(preds, dtype='object')
-        # print(preds)
-
+        # Extract the logits array from predictions
+        logits = predictions[0]
+        preds = np.argmax(logits, axis=2)
 
         batch_size, seq_len = preds.shape
 
