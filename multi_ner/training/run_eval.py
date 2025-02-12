@@ -173,12 +173,15 @@ def main():
         cache_dir=model_args.cache_dir,
         use_fast=model_args.use_fast,
     )
+
+    # logger.info('MODEL NAME: ', model_args.model_name_or_path)
+    # logger.info('CONFIG: ', config)
     model = RoBERTaMultiNER2.from_pretrained(
-            model_args.model_name_or_path,
-            from_tf=bool(".ckpt" in model_args.model_name_or_path),
-            config=config,
-            num_labels=num_labels,
-            cache_dir=model_args.cache_dir,
+        model_args.model_name_or_path,
+        from_tf=False,  # bool(".ckpt" in model_args.model_name_or_path),
+        config=config,
+        num_labels=num_labels,
+        cache_dir=model_args.cache_dir,
     )
     '''
     model_to_save = AutoModel.from_pretrained(
@@ -191,7 +194,7 @@ def main():
     tokenizer.save_pretrained(training_args.output_dir)
     import pdb; pdb.set_trace()
     '''
-        
+
     # Get datasets
     train_dataset = (
         NerDataset(
@@ -223,13 +226,37 @@ def main():
     )
 
     def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
-        preds = np.argmax(predictions, axis=2)
+
+        # logger.info("predictions array: ", predictions)
+        # preds = np.argmax(predictions, axis=2)
+
+        # preds = np.expand_dims(np.argmax(predictions, axis=2), axis=2)
+        # preds = [np.argmax(pred, axis=1) for pred in predictions]
+        # # preds = np.array(preds, dtype=object)
+        # # preds = np.array([p for p in preds], dtype=object)
+        # object_array = np.empty(len(preds), dtype=object)
+        # object_array[:] = preds
+        # preds = object_array
+
+        # # If predictions is a list of arrays, ensure they are all proper NumPy arrays
+        # predictions = [np.array(pred) for pred in predictions]
+
+        # # Use np.stack to build a uniform 3D array
+        # predictions = np.stack(predictions)  # Now shape should be (923, 128, 3)
+
+        # # Then, apply argmax with keepdims behavior via expand_dims
+        # preds = np.argmax(predictions, axis=2)
+
+        preds = [np.argmax(sub_arr, axis=1) if sub_arr.ndim == 2 else np.argmax(sub_arr) for sub_arr in predictions]
+        preds = np.array(preds, dtype='object')
+        # print(preds)
+
 
         batch_size, seq_len = preds.shape
 
         out_label_list = [[] for _ in range(batch_size)]
         preds_list = [[] for _ in range(batch_size)]
-        
+
         for i in range(batch_size):
             for j in range(seq_len):
                 if label_ids[i, j] != nn.CrossEntropyLoss().ignore_index:
@@ -239,8 +266,9 @@ def main():
         return preds_list, out_label_list
 
     def compute_metrics(p: EvalPrediction) -> Dict:
+        logger.info("EvalPrediction: ", p)
         preds_list, out_label_list = align_predictions(p.predictions, p.label_ids)
-        
+
         return {
             "precision": precision_score(out_label_list, preds_list),
             "recall": recall_score(out_label_list, preds_list),
@@ -273,7 +301,7 @@ def main():
         logger.info("*** Evaluate ***")
 
         result = trainer.evaluate()
-        
+
         output_eval_file = os.path.join(training_args.output_dir, "eval_results.txt")
         if trainer.is_world_master():
             with open(output_eval_file, "w") as writer:
@@ -283,7 +311,7 @@ def main():
                     writer.write("%s = %s\n" % (key, value))
 
             results.update(result)
-    
+
     # Predict
     if training_args.do_predict:
         test_dataset = NerDataset(
@@ -299,7 +327,7 @@ def main():
 
         predictions, label_ids, metrics = trainer.predict(test_dataset)
         preds_list, _ = align_predictions(predictions, label_ids)
-        
+
         # Save predictions
         output_test_results_file = os.path.join(training_args.output_dir, "test_results.txt")
         if trainer.is_world_master():
@@ -307,7 +335,7 @@ def main():
                 logger.info("***** Test results *****")
                 for key, value in metrics.items():
                     logger.info("  %s = %s", key, value)
-                    writer.write("%s = %s\n" % (key, value))           
+                    writer.write("%s = %s\n" % (key, value))
 
     return results
 

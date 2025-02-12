@@ -115,3 +115,11 @@ venv.bak/
 # Docker development
 /dockerignore
 resources_v1.1.b.tar.gz
+
+# evaluation
+multi_ner/training/NERdata.tar.gz
+multi_ner/training/NERdata
+multi_ner/training/RoBERTa-large-PM-M3-Voc
+multi_ner/training/RoBERTa-large-PM-M3-Voc-hf.tar.gz
+multi_ner/training/wandb
+multi_ner/training/bern2-ner

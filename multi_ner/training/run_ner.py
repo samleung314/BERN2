@@ -182,7 +182,7 @@ def main():
             num_labels=num_labels,
             config=config,
             cache_dir=model_args.cache_dir,
-        )        
+        )
     else:
         # bert - need modified
         model = BERTMultiNER2.from_pretrained(
@@ -235,7 +235,7 @@ def main():
         if training_args.do_eval
         else None
     )
-    
+
     def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
         preds = np.argmax(predictions, axis=2)
 
@@ -243,7 +243,7 @@ def main():
 
         out_label_list = [[] for _ in range(batch_size)]
         preds_list = [[] for _ in range(batch_size)]
-        
+
         for i in range(batch_size):
             for j in range(seq_len):
                 if label_ids[i, j] != nn.CrossEntropyLoss().ignore_index:
@@ -254,7 +254,7 @@ def main():
 
     def compute_metrics(p: EvalPrediction) -> Dict:
         preds_list, out_label_list = align_predictions(p.predictions, p.label_ids)
-        
+
         return {
             "precision": precision_score(out_label_list, preds_list),
             "recall": recall_score(out_label_list, preds_list),
@@ -288,7 +288,7 @@ def main():
         logger.info("*** Evaluate ***")
 
         result = trainer.evaluate()
-        
+
         output_eval_file = os.path.join(training_args.output_dir, "eval_results.txt")
         if trainer.is_world_master():
             with open(output_eval_file, "w") as writer:
@@ -298,7 +298,7 @@ def main():
                     writer.write("%s = %s\n" % (key, value))
 
             results.update(result)
-    
+
     # Predict
     if training_args.do_predict:
         test_dataset = NerDataset(
@@ -314,7 +314,7 @@ def main():
 
         predictions, label_ids, metrics = trainer.predict(test_dataset)
         preds_list, _ = align_predictions(predictions, label_ids)
-        
+
         # Save predictions
         output_test_results_file = os.path.join(training_args.output_dir, "test_results.txt")
         if trainer.is_world_master():
@@ -323,7 +323,7 @@ def main():
                 for key, value in metrics.items():
                     logger.info("  %s = %s", key, value)
                     writer.write("%s = %s\n" % (key, value))
-                    
+
     return results
 
 
