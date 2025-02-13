@@ -123,3 +123,4 @@ multi_ner/training/RoBERTa-large-PM-M3-Voc
 multi_ner/training/RoBERTa-large-PM-M3-Voc-hf.tar.gz
 multi_ner/training/wandb
 multi_ner/training/bern2-ner
+multi_ner/training/runs
