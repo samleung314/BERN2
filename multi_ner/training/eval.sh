@@ -2,8 +2,8 @@
 
 export MODEL_NAME='./bern2-ner' # or 'dmis-lab/bern2-ner'
 export OUTPUT_DIR='./output'    # Save an output file for evaluation results
-export ENTITY=("NCBI-disease" "BC2GM" "BC4CHEMD" "JNLPBA-cl" "JNLPBA-ct"
-  "JNLPBA-dna" "JNLPBA-rna" "linnaeus")
+export ENTITY="BC2GM" #("NCBI-disease" "BC2GM" "BC4CHEMD" "JNLPBA-cl" "JNLPBA-ct"
+  #"JNLPBA-dna" "JNLPBA-rna" "linnaeus")
 export BATCH_SIZE=32
 export SEED=1
 
