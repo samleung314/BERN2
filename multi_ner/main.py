@@ -40,12 +40,12 @@ from transformers import (
 )
 
 from ops import (
-    json_to_sent, 
-    input_form, 
+    json_to_sent,
+    input_form,
     get_prob,
-    detokenize, 
-    preprocess, 
-    Profile, 
+    detokenize,
+    preprocess,
+    Profile,
 )
 from modeling import RoBERTaMultiNER2
 
@@ -111,7 +111,7 @@ class DataProcessor(object):
                 words = sent[:]
                 labels = ['O'] * len(words)
                 entity_labels = [str(0)] * len(words)
-                
+
                 if len(words) >= 30:
                     while len(words) >= 30:
                         tmplabel = labels[:30]
@@ -123,7 +123,7 @@ class DataProcessor(object):
                                       if len(word) > 0])
                         e = ' '.join([el for el
                                       in entity_labels[:len(tmplabel)]
-                                      if len(el) > 0])              
+                                      if len(el) > 0])
                         lines.append([l, w, e])
                         words = words[len(tmplabel):]
                         labels = labels[len(tmplabel):]
@@ -267,7 +267,7 @@ def convert_examples_to_features(
 
     label_map = {label: i for i, label in enumerate(label_list)}
     features = []
-    
+
     for (ex_index, example) in tqdm(enumerate(examples)):
         if ex_index % 10_000 == 0:
             logger.info("Writing example %d of %d", ex_index, len(examples))
@@ -277,7 +277,7 @@ def convert_examples_to_features(
 
         for word_idx, (word, label) in enumerate(zip(example.words.split(), example.labels.split())):
             word_tokens = tokenizer.tokenize(word)
-            
+
             # bert-base-multilingual-cased sometimes output "nothing ([]) when calling tokenize with just a space.
             if len(word_tokens) > 0:
                 tokens.extend(word_tokens)
@@ -367,7 +367,7 @@ def convert_examples_to_features(
 
             # Zero-pad up to the sequence length.
             padding_length = max_seq_length - len(input_ids)
-            
+
             if pad_on_left:
                 input_ids = ([pad_token] * padding_length) + input_ids
                 input_mask = ([0 if mask_padding_with_zero else 1] * padding_length) + input_mask
@@ -404,7 +404,7 @@ def convert_examples_to_features(
 
             if "token_type_ids" not in tokenizer.model_input_names:
                 segment_ids = None
-            
+
             features.append(
                 InputFeatures(
                     input_ids=input_ids, attention_mask=input_mask, token_type_ids=segment_ids, \
@@ -458,7 +458,7 @@ class NerProcessor(DataProcessor):
         pmids = list()
         for d in dict_list:
             pmids.append(d["pmid"])
-            
+
         json_file = input_form(json_to_sent(dict_list))
 
         return \
@@ -490,14 +490,14 @@ class MTNER:
 
         # Set ner processor
         self.processor = NerProcessor()
-        
+
         # Setup parsing
         self.params = params
         self.prediction_loss_only = False
 
         # Set seed
         set_seed(self.params.seed)
-        
+
         # Prepare Labels
         self.labels = self.processor.get_labels()
         self.id2label: Dict[int, str] = {i: label for i, label in enumerate(self.labels)}
@@ -544,7 +544,7 @@ class MTNER:
         else:
             raise ValueError('Wrong type')
 
-        token_path = os.path.join("multi_ner", "tmp",        
+        token_path = os.path.join("multi_ner", "tmp",
                                   "token_test_{}.txt".format(base_name))
         det_token_path = os.path.join("multi_ner", "tmp",
                                   "det_token_test_{}.txt".format(base_name))
@@ -556,7 +556,7 @@ class MTNER:
 
         predict_example_list = (NerDataset(predict_examples, self.labels,\
                                 self.tokenizer, self.config, self.params, base_name))
-        
+
         tokens, tot_tokens = list(), list()
 
         """
@@ -568,12 +568,12 @@ class MTNER:
         detok_words: <s> Authophagy maintains tumour growth ... </s>
         detok_label:  O       O         O        B      O   ... </s>
         """
-        
+
         with open(det_token_path, 'r') as reader:
             for line_idx, line in enumerate(reader):
                 tok = line.strip()
                 tot_tokens.append(tok)
-                
+
                 if tok == '[CLS]' or tok == '<s>':
                     tmp_toks = [tok]
                 elif tok == '[SEP]' or tok == '</s>':
@@ -588,7 +588,7 @@ class MTNER:
         all_type = self._predict(predict_example_list)
         # disease, drug, gene, spec, cell_line, dna, rna, cell_type
         for etype_idx, etype in enumerate(self.entity_types):
-            
+
             predictions, label_ids = all_type[etype_idx] # batch, seq, labels
             preds_array = self.align_predictions(predictions) # batch, seq
 
@@ -632,14 +632,14 @@ class MTNER:
     @Profile(__name__)
     def recognize_etype(self, etype, tokens, tot_tokens, predictions, preds_array):
         result = []
-        
+
         for one_batch in range(predictions.shape[0]):
             result.append({'prediction':preds_array[one_batch],
                            'log_probs':predictions[one_batch]})
 
         predicts = list()
         logits = list()
-        
+
         for pidx, prediction in enumerate(result):
             slen = len(tokens[pidx])
             for p in prediction['prediction'][:slen]:
@@ -665,7 +665,7 @@ class MTNER:
             overlen = False
             while True:
                 if overlen:
-                    
+
                     try:
                         self.predict_dict[etype][pmid][-1].extend(
                             de_labels[piv + de_i])
@@ -718,11 +718,11 @@ class MTNER:
 
         Works both with or without labels.
         """
-        
+
         prediction_loss_only = prediction_loss_only if prediction_loss_only is not None else self.prediction_loss_only
 
         model = self.model
-        
+
         eval_losses: List[float] = []
         dise_preds: torch.Tensor = None
         chem_preds: torch.Tensor = None
@@ -797,7 +797,7 @@ class MTNER:
                         PredictionOutput(predictions=dna_preds, label_ids=label_ids), \
                         PredictionOutput(predictions=rna_preds, label_ids=label_ids), \
                         PredictionOutput(predictions=ct_preds, label_ids=label_ids))
-                        
+
         return return_output
 
     def align_predictions(self, predictions: np.ndarray) -> List[int]:
@@ -805,7 +805,7 @@ class MTNER:
         batch_size, seq_len = preds.shape
 
         preds_list = [[] for _ in range(batch_size)]
-        
+
         for i in range(batch_size):
             for j in range(seq_len):
                 preds_list[i].append(preds[i][j])
