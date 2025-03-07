@@ -136,7 +136,7 @@ if is_torch_available():
                     )
                     # logger.info(f"Saving features into cached file {cached_features_file}")
                     # torch.save(self.features, cached_features_file)
-                
+
         def __len__(self):
             return len(self.features)
 
@@ -156,7 +156,7 @@ def read_examples_from_file(data_dir, mode: Union[Split, str], data_list='', eva
     def gen_dataset(file_path, guid_index, examples, merge_idx=0, downsample=False, merge_data=""):
         if not os.path.exists(file_path):
             return examples, guid_index
-        
+
         else:
             with open(file_path, encoding="utf-8") as f:
                 words = []
@@ -182,11 +182,11 @@ def read_examples_from_file(data_dir, mode: Union[Split, str], data_list='', eva
                         else:
                             # Examples could have no label for mode = "test"
                             labels.append("O")
-                    
+
                 if words:
                     new_ex.append(InputExample(guid=f"{mode}-{guid_index}", words=words, labels=labels, entity_labels=entity_labels))
                     # examples.append(InputExample(guid=f"{mode}-{guid_index}", words=words, labels=labels, entity_labels=entity_labels))
-            
+
             if downsample:
                 # if merge_data in ["ncbi_disease", "chemdner", "bc2gm", "linnaeus", "jnlpba-cl", "jnlpba-dna", "jnlpba-rna", "jnlpba-ct"]:
                 if merge_data in ["NCBI-disease", "BC4CHEMD", "BC2GM", "linnaeus", "JNLPBA-cl", "JNLPBA-ct", "JNLPBA-dna", "JNLPBA-rna"]:
@@ -255,7 +255,7 @@ def read_examples_from_file(data_dir, mode: Union[Split, str], data_list='', eva
             merge_idx = get_merge_idx(eval_data_type)
             file_path = os.path.join(data_dir+eval_data_type, f"{mode}.txt")
             examples, guid_index = gen_dataset(file_path, guid_index, examples, merge_idx=merge_idx)
-        
+
     return examples
 
 
@@ -287,7 +287,7 @@ def convert_examples_to_features(
     label_map = {label: i for i, label in enumerate(label_list)}
     num_labels = len(label_map)
     features = []
-    
+
     for (ex_index, example) in tqdm(enumerate(examples)):
         if ex_index % 10_000 == 0:
             logger.info("Writing example %d of %d", ex_index, len(examples))
@@ -296,7 +296,7 @@ def convert_examples_to_features(
 
         for word_idx, (word, label) in enumerate(zip(example.words, example.labels)):
             word_tokens = tokenizer.tokenize(word)
-            
+
             # bert-base-multilingual-cased sometimes output "nothing ([]) when calling tokenize with just a space.
             if len(word_tokens) > 0:
                 tokens.extend(word_tokens)
@@ -308,7 +308,7 @@ def convert_examples_to_features(
         if len(tokens) > max_seq_length - special_tokens_count:
             tokens = tokens[: (max_seq_length - special_tokens_count)]
             label_ids = label_ids[: (max_seq_length - special_tokens_count)]
-            
+
         # The convention in BERT is:
         # (a) For sequence pairs:
         #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
@@ -329,13 +329,13 @@ def convert_examples_to_features(
         # the entire model is fine-tuned.
         tokens += [sep_token]
         label_ids += [pad_token_label_id]
-        
+
         if sep_token_extra:
             # roberta uses an extra separator b/w pairs of sentences
             tokens += [sep_token]
             label_ids += [pad_token_label_id]
             entity_type_ids += [example.entity_labels[0]]
-            
+
         # make entity type label index for multiner
         entity_type_ids = [example.entity_labels[0]] * len(tokens)
         segment_ids = [sequence_a_segment_id] * len(tokens)
@@ -357,7 +357,7 @@ def convert_examples_to_features(
 
         # Zero-pad up to the sequence length.
         padding_length = max_seq_length - len(input_ids)
-        
+
         if pad_on_left:
             input_ids = ([pad_token] * padding_length) + input_ids
             input_mask = ([0 if mask_padding_with_zero else 1] * padding_length) + input_mask
@@ -389,7 +389,7 @@ def convert_examples_to_features(
 
         if "token_type_ids" not in tokenizer.model_input_names:
             segment_ids = None
-        
+
         features.append(
             InputFeatures(
                 input_ids=input_ids, attention_mask=input_mask, token_type_ids=segment_ids, \
@@ -414,7 +414,7 @@ def get_labels(path: str) -> List[str]:
     if path:
         with open(path, "r") as f:
             labels = f.read().splitlines()
-            
+
         if "O" not in labels:
             labels = ["O"] + labels
         return labels
